@@ -1,4 +1,4 @@
-process EXTRACT_READS {
+process EXTRACT_UNMAPPED_READS {
     tag "$meta.id"
     label 'process_low'
 
@@ -11,39 +11,28 @@ process EXTRACT_READS {
     tuple val(meta), path(bam)
 
     output:
-    tuple val(meta), path("*mapped*.fastq.gz"), emit: mapped_fastq
-    tuple val(meta), path("*unmapped*.fastq.gz"), emit: unmapped_fastq
+    tuple val(meta), path("*unmapped*.fastq.gz"), emit: fastq
     path "versions.yml", emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
-    def args   = task.ext.args ?: '-f 4'
-    def argz   = task.ext.args ?: '-F 4'
+    def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def mapped = meta.single_end ? "-o ${prefix}_mapped.fastq.gz"   : "-s ${prefix}_mapped_S.fastq.gz   -1 ${prefix}_mapped_R1.fastq.gz   -2 ${prefix}_mapped_R2.fastq.gz"
-    def unmppd = meta.single_end ? "-o ${prefix}_unmapped.fastq.gz" : "-s ${prefix}_unmapped_S.fastq.gz -1 ${prefix}_unmapped_R1.fastq.gz -2 ${prefix}_unmapped_R2.fastq.gz"
+    def out    = meta.single_end ? "-o ${prefix}_unmapped.fastq.gz" : "-s ${prefix}_unmapped_S.fastq.gz -1 ${prefix}_unmapped_R1.fastq.gz -2 ${prefix}_unmapped_R2.fastq.gz"
     """
-    samtools \\
-        fastq \\
-        -F 4 \\
-        --threads ${task.cpus} \\
-        $args \\
-        $bam \\
-        $mapped
-
     samtools \\
         fastq \\
         -f 4 \\
         --threads ${task.cpus} \\
-        $argz \\
+        $args \\
         $bam \\
-        $unmppd
+        $out
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        extractreads: \$(samtools --version |& sed '1!d ; s/samtools //')
+        samtools: \$(samtools --version |& sed '1!d ; s/samtools //')
     END_VERSIONS
     """
 
@@ -51,12 +40,11 @@ process EXTRACT_READS {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    touch ${prefix}_mapped.fastq.gz
     touch ${prefix}_unmapped.fastq.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        extract_reads: \$(samtools --version |& sed '1!d ; s/samtools //')
+        samtools: \$(samtools --version |& sed '1!d ; s/samtools //')
     END_VERSIONS
     """
 }

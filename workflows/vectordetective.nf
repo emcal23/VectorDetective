@@ -37,18 +37,21 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 // https://www.ncbi.nlm.nih.gov/datasets/gene/id/6031419/
 
 Channel.fromPath("$projectDir/ref/Culicidae_ACE2.fna", checkIfExists: true)
-    .map{ it -> tuple("ACE2", file(it[0]))}
-    .view()
-    ch_culicidae_ACE2
+    .set{ch_culicidae_ACE2}
 
 // Homo sapiens COI
 // https://www.ncbi.nlm.nih.gov/datasets/gene/id/4512/
 Channel.fromPath("$projectDir/ref/Hsap_MTCOI.fna", checkIfExists: true)
-    .map{ it -> tuple("COI", file(it[0]))}
-    .view()
-    ch_nonculicidae_COI
+    .set{ch_nonculicidae_COI}
 
-ch_genomes = ch_culicidae_ACE2.mix(ch_nonculicidae_COI)
+ch_culicidae_ACE2
+    .mix(ch_nonculicidae_COI)
+    .collectFile(name: 'reference.fasta')
+    .map{ def meta = [:]
+        meta.id = 'reference'
+        [ meta, file(it)]
+    }
+    .set { ch_genes }
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,8 +65,8 @@ ch_genomes = ch_culicidae_ACE2.mix(ch_nonculicidae_COI)
 
 include { INPUT_CHECK                           } from '../subworkflows/local/input_check'
 include { FASTQ_TRIM_FASTP_FASTQC as FASTQ_QC   } from '../subworkflows/nf-core/fastq_trim_fastp_fastqc/main'
-include { FASTQ_ALIGN_BWA as ALIGN_CULICIDAE    } from '../subworkflows/nf-core/fastq_align_bwa/main' 
-include { FASTQ_ALIGN_BWA as ALIGN_NONCULICIDAE } from '../subworkflows/nf-core/fastq_align_bwa/main'
+include { FASTQ_ALIGN_BWA                       } from '../subworkflows/nf-core/fastq_align_bwa/main' 
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -85,7 +88,8 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS           } from '../modules/nf-core/custo
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { EXTRACT_READS                         } from '../modules/local/extract_reads'
+include { EXTRACT_MAPPED_READS                  } from '../modules/local/extract_mapped_reads'
+include { EXTRACT_UNMAPPED_READS                } from '../modules/local/extract_unmapped_reads'
 include { CREATE_CONSENSUS                      } from '../modules/local/create_consensus'
 
 /*
@@ -99,7 +103,8 @@ def multiqc_report = []
 
 workflow VECTORDETECTIVE {
 
-    ch_versions = Channel.empty()
+    ch_versions      = Channel.empty()
+    ch_multiqc_files = Channel.empty()
 
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
@@ -113,76 +118,67 @@ workflow VECTORDETECTIVE {
     // SUBWORKFLOW: Short reads QC and trim adapters
     //
     FASTQ_QC (
-        ch_shortreads,
+        INPUT_CHECK.out.reads,
         [],
-        params.save_trimmed_fail,
-        params.save_merged,
-        params.skip_fastp,
-        params.skip_fastqc
+        false,
+        false,
+        false,
+        false
     )
     ch_multiqc_files = ch_multiqc_files.mix(FASTQ_QC.out.fastqc_raw_zip)
     ch_multiqc_files = ch_multiqc_files.mix(FASTQ_QC.out.fastqc_trim_zip)
     ch_multiqc_files = ch_multiqc_files.mix(FASTQ_QC.out.trim_json)
-    ch_versions = ch_versions.mix(FASTQ_QC.out.versions.ifEmpty(null))
+    ch_versions      = ch_versions.mix(FASTQ_QC.out.versions.ifEmpty(null))
 
     //
     // Module: Prepare input fasta files
     //
 
     PREPARE_GENOME (
-        ch_genomes
+        ch_genes
     )
 
     //
-    // SUBWORKFLOW: Align reads to Culicidae genome
+    // SUBWORKFLOW: Align reads to reference genes
     //
 
-    ALIGN_CULICIDAE (
+    FASTQ_ALIGN_BWA (
         FASTQ_QC.out.reads,
-        PREPARE_GENOME.out.bwa_index.filter{it =~ /ACE/},
+        PREPARE_GENOME.out.index,
         true,
-        [],
+        ch_genes
     )
-    ch_culicidae_bam = ALIGN_CULICIDAE.out.bam
-    ch_culicidae_bai = ALIGN_CULICIDAE.out.bai
-    ch_multiqc_files = ch_multiqc_files.mix(ALIGN_CULICIDAE.out.stats)
-    ch_multiqc_files = ch_multiqc_files.mix(ALIGN_CULICIDAE.out.flagstat)
-    ch_multiqc_files = ch_multiqc_files.mix(ALIGN_CULICIDAE.out.idxstats)
-
-    ch_versions = ch_versions.mix(ALIGN_CULICIDAE.out.versions.first())
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQ_ALIGN_BWA.out.stats)
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQ_ALIGN_BWA.out.flagstat)
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQ_ALIGN_BWA.out.idxstats)
+    ch_versions      = ch_versions.mix(FASTQ_ALIGN_BWA.out.versions)
     
     //
     // SUBWORKFLOW: Extract relevant reads
     //
 
-    EXTRACT_READS(
-        ch_culicidae_bam
+    ch_genes
+        .map {it -> it[1]}
+        .splitFasta( record: [id: true])
+        .map{ it -> it.id }
+        .set{ch_regions}
+
+    EXTRACT_MAPPED_READS(
+        FASTQ_ALIGN_BWA.out.bam.combine(ch_regions)
     )
+    ch_versions = ch_versions.mix(EXTRACT_MAPPED_READS.out.versions.first())
 
-    //
-    // SUBWORKFLOW: Align reads to additional gene(s): COI
-    //
-
-    ALIGN_NONCULICIDAE (
-        EXTRACT_CULICIDAE_READS.out.unmapped,
-        PREPARE_GENOME.out.bwa_index.filter{it =~ /COI/},
-        true,
-        [],
+    EXTRACT_UNMAPPED_READS(
+        FASTQ_ALIGN_BWA.out.bam
     )
-    ch_nonculicidae_bam = ALIGN_NONCULICIDAE.out.bam
-    ch_nonculicidae_bai = ALIGN_NONCULICIDAE.out.bai
-    ch_multiqc_files = ch_multiqc_files.mix(ALIGN_NONCULICIDAE.out.stats)
-    ch_multiqc_files = ch_multiqc_files.mix(ALIGN_NONCULICIDAE.out.flagstat)
-    ch_multiqc_files = ch_multiqc_files.mix(ALIGN_NONCULICIDAE.out.idxstats)
-
-    ch_versions = ch_versions.mix(ALIGN_NONCULICIDAE.out.versions.first())
+    ch_versions = ch_versions.mix(EXTRACT_UNMAPPED_READS.out.versions.first())
 
     //
     // MODULE: Create consensus
     //
 
     CREATE_CONSENSUS (
-        ch_culicidae_bam.mix(ch_nonculicidae_bam)
+        FASTQ_ALIGN_BWA.out.bam.combine(ch_regions)
     )
 
     ch_versions = ch_versions.mix(CREATE_CONSENSUS.out.versions.first())
@@ -190,7 +186,6 @@ workflow VECTORDETECTIVE {
     //
     // MODULE: Collect and format software versions
     //
-    
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
@@ -210,7 +205,6 @@ workflow VECTORDETECTIVE {
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
 
     MULTIQC (
         ch_multiqc_files.collect(),
