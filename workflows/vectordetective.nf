@@ -32,20 +32,8 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// Mosquito ACE2
-// https://www.ncbi.nlm.nih.gov/gene/?term=Mosquito+ACE-2
-// https://www.ncbi.nlm.nih.gov/datasets/gene/id/6031419/
-
-Channel.fromPath("$projectDir/ref/Culicidae_ACE2.fna", checkIfExists: true)
-    .set{ch_culicidae_ACE2}
-
-// Homo sapiens COI
-// https://www.ncbi.nlm.nih.gov/datasets/gene/id/4512/
-Channel.fromPath("$projectDir/ref/Hsap_MTCOI.fna", checkIfExists: true)
-    .set{ch_nonculicidae_COI}
-
-ch_culicidae_ACE2
-    .mix(ch_nonculicidae_COI)
+Channel
+    .fromPath("$projectDir/ref/*.fna", checkIfExists: true)
     .collectFile(name: 'reference.fasta')
     .map{ def meta = [:]
         meta.id = 'reference'
@@ -90,7 +78,7 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS           } from '../modules/nf-core/custo
 
 include { EXTRACT_MAPPED_READS                  } from '../modules/local/extract_mapped_reads'
 include { EXTRACT_UNMAPPED_READS                } from '../modules/local/extract_unmapped_reads'
-include { CREATE_CONSENSUS                      } from '../modules/local/create_consensus'
+include { CONSENSUS                             } from '../modules/local/create_consensus'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -177,11 +165,11 @@ workflow VECTORDETECTIVE {
     // MODULE: Create consensus
     //
 
-    CREATE_CONSENSUS (
+    CONSENSUS (
         FASTQ_ALIGN_BWA.out.bam.combine(ch_regions)
     )
 
-    ch_versions = ch_versions.mix(CREATE_CONSENSUS.out.versions.first())
+    ch_versions = ch_versions.mix(CONSENSUS.out.versions.first())
 
     //
     // MODULE: Collect and format software versions
@@ -201,7 +189,8 @@ workflow VECTORDETECTIVE {
     methods_description    = WorkflowVectordetective.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description, params)
     ch_methods_description = Channel.value(methods_description)
 
-    ch_multiqc_files = Channel.empty()
+
+    ch_multiqc_files = ch_multiqc_files.map{it -> it[1]}
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())

@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/prefix/vectordetective/master/nextflow_schema.json",
-    "title": "prefix/vectordetective pipeline parameters",
+    "$id": "https://raw.githubusercontent.com/emcal23/VectorDetective/master/nextflow_schema.json",
+    "title": "emcal23/VectorDetective pipeline parameters",
     "description": "Nextflow workflow for identification of Blood Source in Mosquito Bloodmeal",
     "type": "object",
     "definitions": {

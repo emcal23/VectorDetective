@@ -1,6 +1,6 @@
 {
-  "name": "prefix/vectordetective",
-  "homePage": "https://github.com/prefix/vectordetective",
+  "name": "emcal23/VectorDetective",
+  "homePage": "https://github.com/emcal23/VectorDetective",
   "repos": {
     "https://github.com/nf-core/modules.git": {
       "modules": {

@@ -1,10 +1,10 @@
 Run Name: $runName
 
 <% if (success){
-    out << "## prefix/vectordetective execution completed successfully! ##"
+    out << "## emcal23/VectorDetective execution completed successfully! ##"
 } else {
     out << """####################################################
-## prefix/vectordetective execution completed unsuccessfully! ##
+## emcal23/VectorDetective execution completed unsuccessfully! ##
 ####################################################
 The exit status of the task that caused the workflow execution to fail was: $exitStatus.
 The full error message was:
@@ -27,5 +27,5 @@ Pipeline Configuration:
 <% out << summary.collect{ k,v -> " - $k: $v" }.join("\n") %>
 
 --
-prefix/vectordetective
-https://github.com/prefix/vectordetective
+emcal23/VectorDetective
+https://github.com/emcal23/VectorDetective

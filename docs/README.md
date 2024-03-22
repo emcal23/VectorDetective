@@ -1,6 +1,6 @@
-# prefix/vectordetective: Documentation
+# emcal23/VectorDetective: Documentation
 
-The prefix/vectordetective documentation is split into the following pages:
+The emcal23/VectorDetective documentation is split into the following pages:
 
 - [Usage](usage.md)
   - An overview of how the pipeline works, how to run it and a description of all of the different command-line flags.

@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/prefix/vectordetective/master/assets/schema_input.json",
-    "title": "prefix/vectordetective pipeline - params.input schema",
+    "$id": "https://raw.githubusercontent.com/emcal23/VectorDetective/master/assets/schema_input.json",
+    "title": "emcal23/VectorDetective pipeline - params.input schema",
     "description": "Schema for the file provided with params.input",
     "type": "array",
     "items": {

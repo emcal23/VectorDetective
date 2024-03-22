@@ -1,4 +1,4 @@
-# prefix/vectordetective: Citations
+# emcal23/VectorDetective: Citations
 
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 

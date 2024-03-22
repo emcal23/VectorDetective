@@ -31,7 +31,7 @@ process EXTRACT_MAPPED_READS {
         -F 4 \\
         --threads ${task.cpus} \\
         $args \\
-        $bam \\
+        - \\
         $out
 
     cat <<-END_VERSIONS > versions.yml
