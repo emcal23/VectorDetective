@@ -6,6 +6,77 @@ module load singularity
 
 nextflow run emcal23/VectorDetective -profile singularity --input /uufs/chpc.utah.edu/common/home/u1055819/github/uphl/sample_sheet_Feb282024.csv --outdir /uufs/chpc.utah.edu/common/home/saarman-group1/uphl_taxprofilerFrags 
 
+executor >  local (12)
+[93/2040f6] process > VECTORDETECTIVE:INPUT_CHECK:SAMPLESHEET_CHECK (sample_sheet_Feb282024.csv)                  [100%] 1 of 1 \u2714
+[8f/012ced] process > VECTORDETECTIVE:FASTQ_QC:FASTQC_RAW (B016f_T1)                                              [ 83%] 5 of 6, failed: 5
+[51/34471d] process > VECTORDETECTIVE:FASTQ_QC:FASTP (B013f_T1)                                                   [100%] 8 of 8, failed: 1 \u2718
+[-        ] process > VECTORDETECTIVE:FASTQ_QC:FASTQC_TRIM                                                        [  0%] 0 of 7
+[40/4c722b] process > VECTORDETECTIVE:PREPARE_GENOME (reference.fasta)                                            [100%] 1 of 1 \u2714
+[-        ] process > VECTORDETECTIVE:FASTQ_ALIGN_BWA:BWA_MEM                                                     [  0%] 0 of 1
+[-        ] process > VECTORDETECTIVE:FASTQ_ALIGN_BWA:BAM_SORT_STATS_SAMTOOLS:SAMTOOLS_SORT                       -
+[-        ] process > VECTORDETECTIVE:FASTQ_ALIGN_BWA:BAM_SORT_STATS_SAMTOOLS:SAMTOOLS_INDEX                      -
+[-        ] process > VECTORDETECTIVE:FASTQ_ALIGN_BWA:BAM_SORT_STATS_SAMTOOLS:BAM_STATS_SAMTOOLS:SAMTOOLS_STATS   -
+[-        ] process > VECTORDETECTIVE:FASTQ_ALIGN_BWA:BAM_SORT_STATS_SAMTOOLS:BAM_STATS_SAMTOOLS:SAMTOOLS_FLAG... -
+[-        ] process > VECTORDETECTIVE:FASTQ_ALIGN_BWA:BAM_SORT_STATS_SAMTOOLS:BAM_STATS_SAMTOOLS:SAMTOOLS_IDXS... -
+[-        ] process > VECTORDETECTIVE:EXTRACT_MAPPED_READS                                                        -
+[-        ] process > VECTORDETECTIVE:EXTRACT_UNMAPPED_READS                                                      -
+[-        ] process > VECTORDETECTIVE:CONSENSUS                                                                   -
+[-        ] process > VECTORDETECTIVE:CUSTOM_DUMPSOFTWAREVERSIONS                                                 -
+[-        ] process > VECTORDETECTIVE:MULTIQC                                                                     -
+Execution cancelled -- Finishing pending tasks before exit
+ERROR ~ Error executing process > 'VECTORDETECTIVE:FASTQ_QC:FASTP (B013f_T1)'
+
+Caused by:
+  Process `VECTORDETECTIVE:FASTQ_QC:FASTP (B013f_T1)` terminated with an error exit status (1)
+
+Command executed:
+
+  [ ! -f  B013f_T1_1.fastq.gz ] && ln -sf MAD_21_B013f_S2_R1_001.fastq.gz B013f_T1_1.fastq.gz
+  [ ! -f  B013f_T1_2.fastq.gz ] && ln -sf MAD_21_B013f_S2_R2_001.fastq.gz B013f_T1_2.fastq.gz
+  fastp \
+      --in1 B013f_T1_1.fastq.gz \
+      --in2 B013f_T1_2.fastq.gz \
+      --out1 B013f_T1_1.fastp.fastq.gz \
+      --out2 B013f_T1_2.fastp.fastq.gz \
+      --json B013f_T1.fastp.json \
+      --html B013f_T1.fastp.html \
+       \
+       \
+       \
+      --thread 6 \
+      --detect_adapter_for_pe \
+       \
+      2> >(tee B013f_T1.fastp.log >&2)
+  
+  cat <<-END_VERSIONS > versions.yml
+  "VECTORDETECTIVE:FASTQ_QC:FASTP":
+      fastp: $(fastp --version 2>&1 | sed -e "s/fastp //g")
+  END_VERSIONS
+
+Command exit status:
+  1
+
+Command output:
+  (empty)
+
+Command error:
+  Detecting adapter sequence for read1...
+  No adapter detected for read1
+  
+  Detecting adapter sequence for read2...
+  No adapter detected for read2
+
+Work dir:
+  /uufs/chpc.utah.edu/common/home/u1055819/github/VectorDetective/work/51/34471d134d8bc3751349aa5c708ff4
+
+Tip: you can replicate the issue by changing to the process work dir and entering the command `bash .command.run`
+
+ -- Check '.nextflow.log' file for details
+ERROR ~ /uufs/chpc.utah.edu/common/home/u1055819/github/VectorDetective/work/tmp/3c/85c6c071a6617e46e65c5e3ce9bc8a/collated_versions.yml: Disk quota exceeded
+
+ -- Check '.nextflow.log' file for details
+WARN: Can't update history file: .nextflow/history
+
 
 
 Test #2 
