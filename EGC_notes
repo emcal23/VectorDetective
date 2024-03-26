@@ -5,3 +5,9 @@ module load apptainer
 module load singularity
 
 nextflow run emcal23/VectorDetective -profile singularity --input /uufs/chpc.utah.edu/common/home/u1055819/github/uphl/sample_sheet_Feb282024.csv --outdir /uufs/chpc.utah.edu/common/home/saarman-group1/uphl_taxprofilerFrags 
+
+
+
+Test #2 
+
+nextflow run emcal23/VectorDetective -profile singularity --input /uufs/chpc.utah.edu/common/home/u1055819/github/uphl/sample_sheet_Feb282024.csv --fasta /uufs/chpc.utah.edu/common/home/u1055819/github/VectorDetective/ref/Culex_ace2_ref.fna --outdir /uufs/chpc.utah.edu/common/home/saarman-group1/uphl_taxprofilerFrags 
