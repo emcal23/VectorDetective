@@ -1,5 +1,7 @@
-nextflow run command 
+nextflow run commands:
 
+module load nextflow
+module load apptainer
+module load singularity
 
-
-nextflow run nf-core/taxprofiler -profile singularity --input  /uufs/chpc.utah.edu/common/home/u1055819/github/uphl/sample_sheet_Feb282024.csv --databases /uufs/chpc.utah.edu/common/home/u1055819/github/uphl/databases_Jan232024.csv --outdir /uufs/chpc.utah.edu/common/home/saarman-group1/uphl_taxprofilerFrags --run_kraken2 -resume --hostremoval_reference /uufs/chpc.utah.edu/common/home/saarman-group1/Cx_refs/pseudoCxRef.fna --save_hostremoval_bam true --perform_shortread_hostremoval true --save_hostremoval_unmapped true  
+nextflow run emcal23/VectorDetective -profile singularity --input /uufs/chpc.utah.edu/common/home/u1055819/github/uphl/sample_sheet_Feb282024.csv --outdir /uufs/chpc.utah.edu/common/home/saarman-group1/uphl_taxprofilerFrags 
