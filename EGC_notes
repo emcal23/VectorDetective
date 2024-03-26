@@ -82,3 +82,26 @@ WARN: Can't update history file: .nextflow/history
 Test #2 
 
 nextflow run emcal23/VectorDetective -profile singularity -resume --input /uufs/chpc.utah.edu/common/home/u1055819/github/uphl/sample_sheet_Feb282024.csv --fasta /uufs/chpc.utah.edu/common/home/u1055819/github/VectorDetective/ref/Culex_ace2_ref.fna --outdir /uufs/chpc.utah.edu/common/home/saarman-group1/uphl_taxprofilerFrags 
+
+
+[a6/83e7d2] process > VECTORDETECTIVE:INPUT_CHECK:SAMPLESHEET_CHECK (sample_sheet_Feb282024.csv)                  [100%] 1 of 1 \u2714
+[81/37a82c] process > VECTORDETECTIVE:FASTQ_QC:FASTQC_RAW (B015f_T1)                                              [100%] 8 of 8 \u2714
+[26/f1100b] process > VECTORDETECTIVE:FASTQ_QC:FASTP (B015f_T1)                                                   [100%] 8 of 8 \u2714
+[5b/0f3927] process > VECTORDETECTIVE:FASTQ_QC:FASTQC_TRIM (B015f_T1)                                             [100%] 8 of 8 \u2714
+[90/9fff5d] process > VECTORDETECTIVE:PREPARE_GENOME (reference.fasta)                                            [100%] 1 of 1 \u2714
+[fb/7db793] process > VECTORDETECTIVE:FASTQ_ALIGN_BWA:BWA_MEM (B002f_T1)                                          [100%] 1 of 1 \u2714
+[5f/b2744c] process > VECTORDETECTIVE:FASTQ_ALIGN_BWA:BAM_SORT_STATS_SAMTOOLS:SAMTOOLS_SORT (B002f_T1)            [100%] 1 of 1 \u2714
+[e3/a12dbe] process > VECTORDETECTIVE:FASTQ_ALIGN_BWA:BAM_SORT_STATS_SAMTOOLS:SAMTOOLS_INDEX (B002f_T1)           [100%] 1 of 1 \u2714
+[b0/308673] process > VECTORDETECTIVE:FASTQ_ALIGN_BWA:BAM_SORT_STATS_SAMTOOLS:BAM_STATS_SAMTOOLS:SAMTOOLS_STAT... [100%] 1 of 1 \u2714
+[22/feea63] process > VECTORDETECTIVE:FASTQ_ALIGN_BWA:BAM_SORT_STATS_SAMTOOLS:BAM_STATS_SAMTOOLS:SAMTOOLS_FLAG... [100%] 1 of 1 \u2714
+[56/e0a032] process > VECTORDETECTIVE:FASTQ_ALIGN_BWA:BAM_SORT_STATS_SAMTOOLS:BAM_STATS_SAMTOOLS:SAMTOOLS_IDXS... [100%] 1 of 1 \u2714
+[99/245acc] process > VECTORDETECTIVE:EXTRACT_MAPPED_READS (B002f_T1)                                             [100%] 10 of 10 \u2714
+[ba/65bae8] process > VECTORDETECTIVE:EXTRACT_UNMAPPED_READS (B002f_T1)                                           [100%] 1 of 1 \u2714
+[eb/78ecb2] process > VECTORDETECTIVE:CONSENSUS (B002f_T1)                                                        [100%] 10 of 10 \u2714
+[29/2f9627] process > VECTORDETECTIVE:CUSTOM_DUMPSOFTWAREVERSIONS (1)                                             [100%] 1 of 1 \u2714
+[65/0fa625] process > VECTORDETECTIVE:MULTIQC                                                                     [100%] 1 of 1 \u2714
+-[emcal23/VectorDetective] Pipeline completed successfully-
+Completed at: 26-Mar-2024 12:50:59
+Duration    : 1h 22m 23s
+CPU hours   : 21.9
+Succeeded   : 55
