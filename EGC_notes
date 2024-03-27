@@ -105,3 +105,14 @@ Completed at: 26-Mar-2024 12:50:59
 Duration    : 1h 22m 23s
 CPU hours   : 21.9
 Succeeded   : 55
+
+
+3/27/24
+Test #3
+
+module load nextflow
+module load apptainer
+module load singularity
+
+nextflow run emcal23/VectorDetective -profile singularity --input /uufs/chpc.utah.edu/common/home/u1055819/github/uphl/sample_sheet_Mar272024.csv --outdir /uufs/chpc.utah.edu/common/home/saarman-group1/uphl_taxprofilerFrags 
+
