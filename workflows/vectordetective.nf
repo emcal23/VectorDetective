@@ -39,7 +39,7 @@ Channel
         meta.id = 'reference'
         [ meta, file(it)]
     }
-    .set { ch_genes }
+    .set { ch_ref }
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -51,9 +51,11 @@ Channel
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 
+include { ALIGN                                 } from '../subworkflows/local/align/main'
 include { INPUT_CHECK                           } from '../subworkflows/local/input_check'
+include { EXTRACT                               } from '../subworkflows/local/extract/main'
+include { METRICS                               } from '../subworkflows/local/metrics/main'
 include { FASTQ_TRIM_FASTP_FASTQC as FASTQ_QC   } from '../subworkflows/nf-core/fastq_trim_fastp_fastqc/main'
-include { FASTQ_ALIGN_BWA                       } from '../subworkflows/nf-core/fastq_align_bwa/main' 
 
 
 /*
@@ -66,7 +68,6 @@ include { FASTQ_ALIGN_BWA                       } from '../subworkflows/nf-core/
 // MODULE: Installed directly from nf-core/modules
 //
 
-include { BWA_INDEX as PREPARE_GENOME           } from '../modules/nf-core/bwa/index/main' 
 include { MULTIQC                               } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS           } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
@@ -76,9 +77,6 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS           } from '../modules/nf-core/custo
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { EXTRACT_MAPPED_READS                  } from '../modules/local/extract_mapped_reads'
-include { EXTRACT_UNMAPPED_READS                } from '../modules/local/extract_unmapped_reads'
-include { CONSENSUS                             } from '../modules/local/create_consensus'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -116,60 +114,31 @@ workflow VECTORDETECTIVE {
     ch_multiqc_files = ch_multiqc_files.mix(FASTQ_QC.out.fastqc_raw_zip)
     ch_multiqc_files = ch_multiqc_files.mix(FASTQ_QC.out.fastqc_trim_zip)
     ch_multiqc_files = ch_multiqc_files.mix(FASTQ_QC.out.trim_json)
-    ch_versions      = ch_versions.mix(FASTQ_QC.out.versions.ifEmpty(null))
-
-    //
-    // Module: Prepare input fasta files
-    //
-
-    PREPARE_GENOME (
-        ch_genes
-    )
+    ch_versions      = ch_versions.mix(FASTQ_QC.out.versions)
 
     //
     // SUBWORKFLOW: Align reads to reference genes
     //
 
-    FASTQ_ALIGN_BWA (
+    ALIGN (
         FASTQ_QC.out.reads,
-        PREPARE_GENOME.out.index,
-        true,
-        ch_genes
+        ch_ref
     )
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQ_ALIGN_BWA.out.stats)
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQ_ALIGN_BWA.out.flagstat)
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQ_ALIGN_BWA.out.idxstats)
-    ch_versions      = ch_versions.mix(FASTQ_ALIGN_BWA.out.versions)
+    ch_versions      = ch_versions.mix(ALIGN.out.versions)
     
     //
     // SUBWORKFLOW: Extract relevant reads
     //
 
-    ch_genes
-        .map {it -> it[1]}
-        .splitFasta( record: [id: true])
-        .map{ it -> it.id }
-        .set{ch_regions}
-
-    EXTRACT_MAPPED_READS(
-        FASTQ_ALIGN_BWA.out.bam.combine(ch_regions)
-    )
-    ch_versions = ch_versions.mix(EXTRACT_MAPPED_READS.out.versions.first())
-
-    EXTRACT_UNMAPPED_READS(
-        FASTQ_ALIGN_BWA.out.bam
-    )
-    ch_versions = ch_versions.mix(EXTRACT_UNMAPPED_READS.out.versions.first())
-
-    //
-    // MODULE: Create consensus
-    //
-
-    CONSENSUS (
-        FASTQ_ALIGN_BWA.out.bam.combine(ch_regions)
+    METRICS (
+        ALIGN.out.bam
     )
 
-    ch_versions = ch_versions.mix(CONSENSUS.out.versions.first())
+    EXTRACT(
+        ch_ref,
+        ALIGN.out.bam
+    )
+    ch_versions      = ch_versions.mix(EXTRACT.out.versions)
 
     //
     // MODULE: Collect and format software versions
