@@ -116,3 +116,20 @@ module load singularity
 
 nextflow run emcal23/VectorDetective -profile singularity --input /uufs/chpc.utah.edu/common/home/u1055819/github/uphl/sample_sheet_Mar272024.csv --outdir /uufs/chpc.utah.edu/common/home/saarman-group1/uphl_taxprofilerFrags 
 
+*Got results back with only B002_T1 - is it only getting to the first sample? why is it changing the names of the files? 
+
+
+4/12/2024
+*tried pulling from github in R. ensured sample sheet was correct. 
+*Meeting with Erin - removed code that should be adding the T1, 
+
+move to scratch
+cd /scratch/general/vast/u1055819
+
+
+module load nextflow
+module load apptainer
+module load singularity
+
+nextflow run emcal23/VectorDetective -profile singularity --input /uufs/chpc.utah.edu/common/home/u1055819/github/uphl/sample_sheet_Mar272024.csv --outdir /uufs/chpc.utah.edu/common/home/saarman-group1/uphl_taxprofilerFrags 
+
