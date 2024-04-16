@@ -40,12 +40,13 @@ workflow METRICS {
     ch_versions = ch_versions.mix(SAMTOOLS_COVERAGE.out.versions.first())
 
     emit:
-    bai      = SAMTOOLS_INDEX.out.bai          // channel: [ val(meta), [ bai ] ]
+    bai      = SAMTOOLS_INDEX.out.bai         // channel: [ val(meta), [ bai ] ]
 
     stats    = SAMTOOLS_STATS.out.stats       // channel: [ val(meta), [ stats ] ]
     flagstat = SAMTOOLS_FLAGSTAT.out.flagstat // channel: [ val(meta), [ flagstat ] ]
     idxstats = SAMTOOLS_IDXSTATS.out.idxstats // channel: [ val(meta), [ idxstats ] ]
-    //coverage = SAMTOOLS_COVERAGE.out.coverage // channel: [ val(meta), [ coverage ] ]
+    coverage = SAMTOOLS_COVERAGE.out.coverage // channel: [ val(meta), [ coverage ] ]
+    depth    = SAMTOOLS_DEPTH.out.depth       // channel: [ val(meta), [ depth ] ]
 
-    versions = ch_versions                     // channel: [ versions.yml ]
+    versions = ch_versions                    // channel: [ versions.yml ]
 }
