@@ -132,7 +132,6 @@ workflow VECTORDETECTIVE {
     //
     // SUBWORKFLOW: Align reads to reference genes
     //
-
     ALIGN (
         FASTQ_QC.out.reads,
         ch_ref
@@ -142,7 +141,6 @@ workflow VECTORDETECTIVE {
     //
     // SUBWORKFLOW: Get relevant metrics
     //
-
     METRICS (
         ALIGN.out.bam
     )
@@ -156,7 +154,6 @@ workflow VECTORDETECTIVE {
     //
     // SUBWORKFLOW: Extract relevant reads
     //
-
     EXTRACT(
         ch_ref,
         ALIGN.out.bam
@@ -177,7 +174,6 @@ workflow VECTORDETECTIVE {
     //
     // MODULE: Collect and format software versions
     //
-
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
@@ -185,7 +181,6 @@ workflow VECTORDETECTIVE {
     //
     // MODULE: MultiQC
     //
-
     workflow_summary    = WorkflowVectordetective.paramsSummaryMultiqc(workflow, summary_params)
     ch_workflow_summary = Channel.value(workflow_summary)
 
