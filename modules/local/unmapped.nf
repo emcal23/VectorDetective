@@ -1,4 +1,4 @@
-process EXTRACT_UNMAPPED_READS {
+process UNMAPPED {
     tag "$meta.id"
     label 'process_low'
 

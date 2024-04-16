@@ -1,4 +1,4 @@
-process EXTRACT_MAPPED_READS {
+process MAPPED {
     tag "$meta.id"
     label 'process_low'
 
