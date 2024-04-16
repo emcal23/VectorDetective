@@ -41,6 +41,18 @@ Channel
     }
     .set { ch_ref }
 
+if (params.blast_db) {
+    Channel
+        .fromPath(params.blast_db, checkIfExists: true)
+        .map{ def meta = [:]
+            meta.id = 'db'
+            [ meta, path(it)]
+        }
+        .set { ch_blast_db }
+} else {
+    ch_blast_db = Channel.empty()
+}
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT LOCAL MODULES/SUBWORKFLOWS
@@ -77,6 +89,7 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS           } from '../modules/nf-core/custo
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+include { BLAST_BLASTN                          } from '../modules/nf-core/blast/blastn/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -127,18 +140,39 @@ workflow VECTORDETECTIVE {
     ch_versions      = ch_versions.mix(ALIGN.out.versions)
     
     //
-    // SUBWORKFLOW: Extract relevant reads
+    // SUBWORKFLOW: Get relevant metrics
     //
 
     METRICS (
         ALIGN.out.bam
     )
+    ch_versions      = ch_versions.mix(METRICS.out.versions)
+    ch_multiqc_files = ch_multiqc_files.mix(METRICS.out.stats)
+    ch_multiqc_files = ch_multiqc_files.mix(METRICS.out.flagstat)
+    ch_multiqc_files = ch_multiqc_files.mix(METRICS.out.idxstats)
+    ch_multiqc_files = ch_multiqc_files.mix(METRICS.out.coverage)
+    ch_multiqc_files = ch_multiqc_files.mix(METRICS.out.depth)
+
+    //
+    // SUBWORKFLOW: Extract relevant reads
+    //
 
     EXTRACT(
         ch_ref,
         ALIGN.out.bam
     )
     ch_versions      = ch_versions.mix(EXTRACT.out.versions)
+
+    //
+    // MODULE: Blast consensus fastas
+    //
+    if (params.blast_db) {
+        BLAST_BLASTN (
+            EXTRACT.out.fasta.mix(EXTRACT.out.consensus),
+            ch_blast_db
+        )
+        ch_versions      = ch_versions.mix(BLAST_BLASTN.out.versions)
+    }
 
     //
     // MODULE: Collect and format software versions
