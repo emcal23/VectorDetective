@@ -41,6 +41,7 @@ Now, you can run the pipeline using:
 nextflow run emcal23/VectorDetective \
    -profile <docker/singularity/.../institute> \
    --input samplesheet.csv \
+   --blast_db <path/to/blast/database/> \ #optional
    --outdir <OUTDIR>
 ```
 

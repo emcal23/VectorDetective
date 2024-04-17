@@ -43,11 +43,7 @@ Channel
 
 if (params.blast_db) {
     Channel
-        .fromPath(params.blast_db, checkIfExists: true)
-        .map{ def meta = [:]
-            meta.id = 'db'
-            [ meta, path(it)]
-        }
+        .fromPath(params.blast_db, type: "dir", checkIfExists: true)
         .set { ch_blast_db }
 } else {
     ch_blast_db = Channel.empty()
@@ -89,7 +85,7 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS           } from '../modules/nf-core/custo
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { BLAST_BLASTN                          } from '../modules/nf-core/blast/blastn/main'
+include { BLAST_BLASTN                          } from '../modules/local/blast_blastn'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -165,10 +161,12 @@ workflow VECTORDETECTIVE {
     //
     if (params.blast_db) {
         BLAST_BLASTN (
-            EXTRACT.out.fasta.mix(EXTRACT.out.consensus),
-            ch_blast_db
+            EXTRACT.out.fasta.mix(EXTRACT.out.consensus).combine(ch_blast_db)
         )
         ch_versions      = ch_versions.mix(BLAST_BLASTN.out.versions)
+        ch_blast_results = BLAST_BLASTN.out.txt
+    } else {
+        ch_blast_results = Channel.empty()
     }
 
     //
