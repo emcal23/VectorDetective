@@ -1,4 +1,4 @@
-process SEQKIT {
+process SEQKIT_FQ2FA {
     tag "$meta.id"
     label 'process_medium'
 

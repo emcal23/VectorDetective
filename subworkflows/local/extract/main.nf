@@ -2,10 +2,11 @@
 // Get fasta files for Mosquito/Non mosquito reads
 //
 
-include { MAPPED    } from '../../../modules/local/mapped'
-include { UNMAPPED  } from '../../../modules/local/unmapped'
-include { CONSENSUS } from '../../../modules/local/create_consensus'
-include { SEQKIT    } from '../../../modules/local/seqkit' 
+include { MAPPED        } from '../../../modules/local/mapped'
+include { UNMAPPED      } from '../../../modules/local/unmapped'
+include { CONSENSUS     } from '../../../modules/local/create_consensus'
+include { SEQKIT_FQ2FA  } from '../../../modules/local/seqkit_fq2fa' 
+include { SEQKIT_SAMPLE } from '../../../modules/local/seqkit_sample' 
 
 workflow EXTRACT {
     take:
@@ -47,15 +48,23 @@ workflow EXTRACT {
     ch_versions = ch_versions.mix(CONSENSUS.out.versions.first())
 
     //
-    // MODULE: Convert unmapped reads to fasta for blast
+    // MODULE: Subsample Reads
     //
-    SEQKIT (
+    SEQKIT_SAMPLE (
         UNMAPPED.out.fastq
     )
-    ch_versions = ch_versions.mix(SEQKIT.out.versions.first())
+    ch_versions = ch_versions.mix(SEQKIT_SAMPLE.out.versions.first())    
+
+    //
+    // MODULE: Convert unmapped reads to fasta for blast
+    //
+    SEQKIT_FQ2FA (
+        SEQKIT_SAMPLE.out.fastq
+    )
+    ch_versions = ch_versions.mix(SEQKIT_FQ2FA.out.versions.first())
 
     emit:
-    fasta     = SEQKIT.out.fasta                // channel: [ val(meta), path(fasta) ]
+    fasta     = SEQKIT_FQ2FA.out.fasta          // channel: [ val(meta), path(fasta) ]
     consensus = CONSENSUS.out.fasta             // channel: [ val(meta), path(fasta) ]
     versions  = ch_versions                     // channel: [ versions.yml ]
 }
