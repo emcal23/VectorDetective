@@ -143,3 +143,15 @@ module spider blast
 
 nextflow run emcal23/VectorDetective -profile singularity --input /uufs/chpc.utah.edu/common/home/u1055819/github/uphl/sample_sheet_Mar272024.csv --outdir /uufs/chpc.utah.edu/common/home/saarman-group1/uphl_taxprofilerFrags 
 —blast_db /scratch/general/vast/app-repo/blastdb/DbFiles/v5
+
+
+4/24/2024
+*trying Erin's recommendations - running a test of two samples with updated NF doc
+
+module load nextflow
+module load apptainer
+module load singularity
+module spider blast
+
+nextflow run emcal23/VectorDetective -profile singularity --input /uufs/chpc.utah.edu/common/home/u1055819/github/uphl/sample_sheet_April242024.csv --outdir /uufs/chpc.utah.edu/common/home/saarman-group1/uphl_taxprofilerFrags 
+—-blast_db /scratch/general/vast/app-repo/blastdb/DbFiles/v5
