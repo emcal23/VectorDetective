@@ -12,7 +12,7 @@ class WorkflowVectordetective {
     //
     public static void initialise(params, log) {
 
-        genomeExistsError(params, log)
+        //genomeExistsError(params, log)
 
     }
 
