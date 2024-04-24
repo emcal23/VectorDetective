@@ -163,3 +163,6 @@ maybe change output to avoid overcrowding
 
 nextflow run emcal23/VectorDetective -profile singularity --input /uufs/chpc.utah.edu/common/home/u1055819/github/uphl/sample_sheet_April242024.csv --outdir /uufs/chpc.utah.edu/common/home/saarman-group1/uphl_taxprofiler
 —-blast_db /scratch/general/vast/app-repo/blastdb/DbFiles/v5
+
+switching to scratch 
+cd /scratch/general/vast/u1055819
